@@ -30,7 +30,7 @@ Article.prototype.toHtml = function(scriptTemplateId) {
 /* DONE: Refactor this code into a function for greater control.
     It will take in our data, and process it via the Article constructor: */
 
-Article.loadAll = function(inputData) {
+Article.loadAll = function(inputData) {;
   inputData.sort(function(a,b) {
     return (new Date(b.publishedOn)) - (new Date(a.publishedOn));
   })
@@ -51,9 +51,20 @@ Article.fetchAll = function() {
     1. Retrieve our JSON file with $.getJSON
       1.a Load our json data
       1.b Store that data in localStorage so that we can skip the server call next time,
-      1.c And then render the index page.*/
+      1.c And then render the index page.
+      DONE*/
+    $.getJSON("data/blogArticles.json", function(json) {
+      var dataString = JSON.stringify(json);
+      localStorage.setItem('blogArticles', dataString);
+      Article.loadAll(json);
+      articleView.renderIndexPage();
+    });
+
+
+
   }
 };
+
 
 
 
@@ -68,3 +79,4 @@ Article.fetchAll = function() {
     } else {}
   }
 */
+Article.fetchAll();
