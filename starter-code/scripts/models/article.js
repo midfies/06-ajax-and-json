@@ -30,7 +30,7 @@ Article.prototype.toHtml = function(scriptTemplateId) {
 /* DONE: Refactor this code into a function for greater control.
     It will take in our data, and process it via the Article constructor: */
 
-Article.loadAll = function(inputData) {;
+Article.loadAll = function(inputData) {
   inputData.sort(function(a,b) {
     return (new Date(b.publishedOn)) - (new Date(a.publishedOn));
   })
@@ -64,17 +64,9 @@ Article.loadAll = function(inputData) {;
 //       Article.loadAll(json);
 //       articleView.renderIndexPage();
 //     });
-//
-//
-//
 //   }
 // };
-
-
-// var lsd = localStorage.getItem('blogArticles');
-// var xhr = new XMLHttpRequest();
-//
-
+//ABOVE CODE IS THE ORIGINAL REQUIREMENTS WITHOUT USING ETAGS!
 
 
 /* Great work so far! STRETCH GOAL TIME!? Our main goal in this part of the
@@ -82,30 +74,37 @@ Article.loadAll = function(inputData) {;
    */
 
 Article.fetchAll = function() {
+
   if (localStorage.blogArticles) {
     //  Let's make a request to get the eTag (hint: what method on which
     //   object could we use to find the eTag?
     var storedETag = localStorage.getItem('etag');
     $.ajax({
-      type: 'GET',
+      type: 'HEAD',
       url: 'data/blogArticles.json',
       success: function (result, message, xhr) {
         var etags = xhr.getResponseHeader('ETag');
+        console.log(storedETag, 'storedETag');
+        console.log(etags, 'etags');
         if(storedETag !== etags){
-          console.log('here');
-          localStorage.setItem('blogArticles', result);
           localStorage.setItem('etag', etags);
+          $.ajax({
+            type: 'GET',
+            url: 'data/blogArticles.json',
+            success: function (result) {
+              localStorage.setItem('blogArticles', JSON.stringify(result));
+              Article.loadAll(result);
+            }
+          });
         }
       }
     });
-
     var dataFromStorage = localStorage.getItem('blogArticles');
     var parseData = JSON.parse(dataFromStorage);
     Article.loadAll(parseData);
     articleView.renderIndexPage();
   } else {
-
-    var test = $.ajax({
+    $.ajax({
       type: 'GET',
       url: 'data/blogArticles.json',
       success: function (result, message, xhr) {
@@ -115,8 +114,6 @@ Article.fetchAll = function() {
         localStorage.setItem('blogArticles', data);
         Article.loadAll(result);
         articleView.renderIndexPage();
-        console.log(xhr);
-        console.log(JSON.stringify(etags));
       }
     });
   }
